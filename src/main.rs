@@ -1,7 +1,6 @@
 use rand::Rng;
 use std::io;
 use inline_colorization::*;
-use clearscreen::*;
 
 fn print_logo() {
     let logo = r#"
