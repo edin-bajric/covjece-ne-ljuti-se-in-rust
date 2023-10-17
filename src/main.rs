@@ -2,6 +2,7 @@ extern crate rand;
 
 use rand::Rng;
 use std::io;
+use inline_colorization::*;
 
 fn print_logo() {
     let logo = r#"
