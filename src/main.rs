@@ -1,6 +1,7 @@
 use rand::Rng;
 use std::io;
 use inline_colorization::*;
+use clearscreen::*;
 
 fn print_logo() {
     let logo = r#"
@@ -73,6 +74,7 @@ fn roll() -> u32 {
 }
 
 fn main() {
+    clearscreen::clear().expect("failed to clear screen");
     print_logo();
     let number_of_players = choose_number_of_players();
     let player_colors = choose_player_colors(number_of_players);
