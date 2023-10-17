@@ -50,10 +50,14 @@ fn choose_player_colors(number_of_players: u32) -> Vec<String> {
             io::stdin().read_line(&mut input).expect("Failed to read line");
             let chosen_color = input.trim().to_string();
 
-            if available_colors.contains(&chosen_color.as_str()) && !player_colors.contains(&chosen_color) {
-                break chosen_color;
+            if available_colors.contains(&chosen_color.as_str()) {
+                if player_colors.contains(&chosen_color) {
+                    println!("Color already chosen. Please choose a different color.");
+                } else {
+                    break chosen_color;
+                }
             } else {
-                println!("Invalid color or color already chosen. Choose from Red, Blue, Green, or Yellow.");
+                println!("Invalid color. Choose from Red, Blue, Green, or Yellow.");
             }
         };
 
@@ -77,5 +81,7 @@ fn main() {
     for (i, color) in player_colors.iter().enumerate() {
         println!("Player {}: {}", i + 1, color);
     }
+
+    roll();
 
 }
