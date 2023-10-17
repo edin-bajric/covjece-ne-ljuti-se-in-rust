@@ -1,5 +1,3 @@
-extern crate rand;
-
 use rand::Rng;
 use std::io;
 use inline_colorization::*;
@@ -20,26 +18,50 @@ fn print_logo() {
 
 fn choose_number_of_players() -> u32 {
     loop {
-        let mut number_of_players = String::new();
+        let mut input = String::new();
         println!("Choose number of players (must be between 2 and 4): ");
-        io::stdin().read_line(&mut number_of_players).expect("Failed to read line");
+        io::stdin().read_line(&mut input).expect("Failed to read line");
 
-        let number: u32 = match number_of_players.trim().parse() {
+        let number_of_players: u32 = match input.trim().parse() {
             Ok(parsed) => parsed,
             Err(_) => {
-                println!("Invalid input. Please enter a valid u32 number.");
+                println!("Invalid input. Please enter a valid number.");
                 continue;
             }
         };
 
-        if (2..=4).contains(&number) {
-            return number;
+        if (2..=4).contains(&number_of_players) {
+            return number_of_players;
         } else {
             println!("Number out of range. Please enter a number between 2 and 4.");
         }
     }
 }
 
+fn choose_player_colors(number_of_players: u32) -> Vec<String> {
+    let mut player_colors = Vec::new();
+    let available_colors = vec!["Red", "Blue", "Green", "Yellow"];
+
+    for player in 1..=number_of_players {
+        println!("Player {}: Choose your color (Red, Blue, Green, or Yellow):", player);
+
+        let chosen_color = loop {
+            let mut input = String::new();
+            io::stdin().read_line(&mut input).expect("Failed to read line");
+            let chosen_color = input.trim().to_string();
+
+            if available_colors.contains(&chosen_color.as_str()) && !player_colors.contains(&chosen_color) {
+                break chosen_color;
+            } else {
+                println!("Invalid color or color already chosen. Choose from Red, Blue, Green, or Yellow.");
+            }
+        };
+
+        player_colors.push(chosen_color);
+    }
+
+    player_colors
+}
 
 fn roll() -> u32 {
     let mut rng = rand::thread_rng();
@@ -48,6 +70,12 @@ fn roll() -> u32 {
 
 fn main() {
     print_logo();
-    choose_number_of_players();
+    let number_of_players = choose_number_of_players();
+    let player_colors = choose_player_colors(number_of_players);
+
+    println!("Players and their chosen colors:");
+    for (i, color) in player_colors.iter().enumerate() {
+        println!("Player {}: {}", i + 1, color);
+    }
 
 }
