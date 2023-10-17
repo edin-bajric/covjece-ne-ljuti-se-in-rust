@@ -15,13 +15,13 @@ fn print_logo() {
 
     "#;
     
-    println!("{}", logo);
+    println!("{color_cyan}{}{color_reset}", logo);
 }
 
 fn choose_number_of_players() -> u32 {
     loop {
         let mut number_of_players = String::new();
-        println!("Choose number of players (must be from 2 to 4): ");
+        println!("Choose number of players (must be between 2 and 4): ");
         io::stdin().read_line(&mut number_of_players).expect("Failed to read line");
 
         let number: u32 = match number_of_players.trim().parse() {
@@ -40,6 +40,7 @@ fn choose_number_of_players() -> u32 {
     }
 }
 
+
 fn roll() -> u32 {
     let mut rng = rand::thread_rng();
     return rng.gen_range(1..=6);
@@ -48,4 +49,5 @@ fn roll() -> u32 {
 fn main() {
     print_logo();
     choose_number_of_players();
+
 }
