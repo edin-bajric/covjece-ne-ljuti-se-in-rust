@@ -19,7 +19,7 @@ fn print_logo() {
 fn choose_number_of_players() -> u32 {
     loop {
         let mut input = String::new();
-        println!("Choose number of players (must be between 2 and 4):");
+        println!("Choose number of players (must be between 2 and 4): ");
         io::stdin().read_line(&mut input).expect("Failed to read line");
 
         let number_of_players: u32 = match input.trim().parse() {
