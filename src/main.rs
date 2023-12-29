@@ -40,10 +40,10 @@ fn choose_number_of_players() -> u32 {
 
 fn choose_player_colors(number_of_players: u32) -> Vec<String> {
     let mut player_colors = Vec::new();
-    let available_colors = vec!["Red", "Blue", "Green", "Yellow"];
+    let available_colors = vec!["red", "blue", "green", "yellow"];
 
     for player in 1..=number_of_players {
-        println!("Player {}: Choose your color ({color_red}Red, {color_blue}Blue, {color_green}Green, or {color_yellow}Yellow{color_reset}):", player);
+        println!("Player {}: Choose your color ({color_red}red, {color_blue}blue, {color_green}green, {color_reset}or {color_yellow}yellow{color_reset}):", player);
 
         let chosen_color = loop {
             let mut input = String::new();
@@ -57,7 +57,7 @@ fn choose_player_colors(number_of_players: u32) -> Vec<String> {
                     break chosen_color;
                 }
             } else {
-                println!("Invalid color. Choose from Red, Blue, Green, or Yellow.");
+                println!("Invalid color. Choose from red, blue, green, or yellow.");
             }
         };
 
