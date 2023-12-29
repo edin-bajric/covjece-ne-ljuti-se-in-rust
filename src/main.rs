@@ -2,6 +2,20 @@ use rand::Rng;
 use std::io;
 use inline_colorization::*;
 
+struct Player {
+    color: String,
+    pawns: [u32; 4],
+}
+
+impl Player {
+    fn new(color: String) -> Self {
+        Player {
+            color,
+            pawns: [0; 4],
+        }
+    }
+}
+
 fn print_logo() {
     let logo = r#"
      ____           _                              _  _       _   _            
@@ -12,7 +26,7 @@ fn print_logo() {
                  |__/                              |__/                        
 
     "#;
-    
+
     println!("{color_cyan}{}{color_reset}", logo);
 }
 
@@ -20,7 +34,9 @@ fn choose_number_of_players() -> u32 {
     loop {
         let mut input = String::new();
         println!("Choose number of players (must be between 2 and 4): ");
-        io::stdin().read_line(&mut input).expect("Failed to read line");
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read line");
 
         let number_of_players: u32 = match input.trim().parse() {
             Ok(parsed) => parsed,
@@ -38,20 +54,25 @@ fn choose_number_of_players() -> u32 {
     }
 }
 
-fn choose_player_colors(number_of_players: u32) -> Vec<String> {
-    let mut player_colors = Vec::new();
+fn choose_player_colors(number_of_players: u32) -> Vec<Player> {
+    let mut players = Vec::new();
     let available_colors = vec!["red", "blue", "green", "yellow"];
 
     for player in 1..=number_of_players {
-        println!("Player {}: Choose your color ({color_red}red, {color_blue}blue, {color_green}green, {color_reset}or {color_yellow}yellow{color_reset}):", player);
+        println!(
+            "Player {}: Choose your color ({color_red}red, {color_blue}blue, {color_green}green, {color_reset}or {color_yellow}yellow{color_reset}):",
+            player
+        );
 
         let chosen_color = loop {
             let mut input = String::new();
-            io::stdin().read_line(&mut input).expect("Failed to read line");
+            io::stdin()
+                .read_line(&mut input)
+                .expect("Failed to read line");
             let chosen_color = input.trim().to_string();
 
             if available_colors.contains(&chosen_color.as_str()) {
-                if player_colors.contains(&chosen_color) {
+                if players.iter().any(|p: &Player| p.color == chosen_color) {
                     println!("Color already chosen. Please choose a different color.");
                 } else {
                     break chosen_color;
@@ -61,11 +82,13 @@ fn choose_player_colors(number_of_players: u32) -> Vec<String> {
             }
         };
 
-        player_colors.push(chosen_color);
+        let player = Player::new(chosen_color);
+        players.push(player);
     }
 
-    player_colors
+    players
 }
+
 
 fn roll() -> u32 {
     let mut rng = rand::thread_rng();
@@ -76,13 +99,11 @@ fn main() {
     clearscreen::clear().expect("failed to clear screen");
     print_logo();
     let number_of_players = choose_number_of_players();
-    let player_colors = choose_player_colors(number_of_players);
+    let mut players = choose_player_colors(number_of_players);
 
     println!("Players and their chosen colors:");
-    for (i, color) in player_colors.iter().enumerate() {
-        println!("Player {}: {}", i + 1, color);
+    for (i, player) in players.iter_mut().enumerate() {
+        println!("Player {}: {} - {:?}", i + 1, player.color, player.pawns);
     }
-
-    roll();
-
 }
+
