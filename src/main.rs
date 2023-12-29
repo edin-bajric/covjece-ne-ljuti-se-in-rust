@@ -14,6 +14,13 @@ impl Player {
             pawns: [0; 4],
         }
     }
+    fn roll(&mut self) -> u32 {
+        println!("\nPress 'Enter' to roll the dice for player {}...", self.color);
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).expect("Failed to read line");
+        let mut rng = rand::thread_rng();
+        rng.gen_range(1..=6)
+    }
 }
 
 fn print_logo() {
@@ -90,12 +97,27 @@ fn choose_player_colors(number_of_players: u32) -> Vec<Player> {
 }
 
 
-fn roll() -> u32 {
-    let mut rng = rand::thread_rng();
-    return rng.gen_range(1..=6);
+fn initial_rolls(players: &mut Vec<Player>) {
+    for player in players.iter_mut() {
+        let mut counter = 0;
+
+        while counter < 3 {
+            let roll_result = player.roll();
+            println!("{} rolled: {}", player.color, roll_result);
+
+            if roll_result == 6 {
+                println!("{} put a pawn on the board", player.color);
+                player.pawns[0] = 1;
+                break;
+            }
+
+            counter += 1;
+        }
+        println!("pawn positions on the board - {:?}", player.pawns);
+    }
 }
 
-fn main() {
+fn run_game() {
     clearscreen::clear().expect("failed to clear screen");
     print_logo();
     let number_of_players = choose_number_of_players();
@@ -103,7 +125,13 @@ fn main() {
 
     println!("Players and their chosen colors:");
     for (i, player) in players.iter_mut().enumerate() {
-        println!("player {}: {} - {:?}", i + 1, player.color, player.pawns);
+        println!("Player {}: {} | pawn positions on the board - {:?}", i + 1, player.color, player.pawns);
     }
+
+    initial_rolls(&mut players);
+}
+
+fn main() {
+    run_game();
 }
 
