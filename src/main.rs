@@ -118,34 +118,36 @@ fn initial_rolls(players: &mut Vec<Player>) {
 }
 
 fn move_existing_pawn(player: &mut Player, roll_result: u32) {
-    let empty_count = player.pawns.iter().filter(|&&pawn| pawn == 0).count();
+    loop {
+        println!("Choose which pawn to move (1, 2, 3, or 4): ");
+        println!("pawn positions on the board - {:?}", player.pawns);
+        let mut pawn_number_input = String::new();
+        io::stdin().read_line(&mut pawn_number_input).expect("Failed to read line");
+        let pawn_number: usize = match pawn_number_input.trim().parse() {
+            Ok(parsed) => parsed,
+            Err(_) => {
+                println!("Invalid input. Please enter a number between 1 and 4.");
+                continue;
+            }
+        };
 
-    if empty_count == 3 {
-        if let Some(non_empty_index) = player.pawns.iter().position(|&pawn| pawn != 0) {
-            player.pawns[non_empty_index] += roll_result;
-        }
-    } else if empty_count < 3 {
-        loop {
-            println!("Choose which pawn to move (1, 2, 3, or 4): ");
-            println!("pawn positions on the board - {:?}", player.pawns);
-            let mut pawn_number_input = String::new();
-            io::stdin().read_line(&mut pawn_number_input).expect("Failed to read line");
-            let pawn_number: usize = match pawn_number_input.trim().parse() {
-                Ok(parsed) => parsed,
-                Err(_) => {
-                    println!("Invalid input. Please enter a number between 1 and 4.");
-                    continue;
-                }
-            };
+        if pawn_number >= 1 && pawn_number <= 4 && player.pawns[pawn_number - 1] != 0 {
+            let target_position = player.pawns[pawn_number - 1] + roll_result;
 
-            if pawn_number >= 1 && pawn_number <= 4 && player.pawns[pawn_number - 1] != 0 {
+            if !is_position_occupied(&player.pawns, target_position) {
                 player.pawns[pawn_number - 1] += roll_result;
                 break;
             } else {
-                println!("Invalid pawn number or pawn already at the target position. Try again.");
+                println!("Another pawn occupies the target position. Choose another pawn.");
             }
+        } else {
+            println!("Invalid pawn number or pawn not at the target position. Try again.");
         }
     }
+}
+
+fn is_position_occupied(pawns: &[u32; 4], target_position: u32) -> bool {
+    pawns.iter().any(|&position| position == target_position)
 }
 
 fn place_new_pawn(player: &mut Player) {
@@ -200,7 +202,6 @@ fn handle_roll(player: &mut Player) -> bool {
 }
 
 fn handle_six_roll(player: &mut Player) {
-    
     loop {
         println!("Press 'm' to move an existing pawn or 'p' to place another pawn on the board");
         let mut action = String::new();
@@ -213,7 +214,12 @@ fn handle_six_roll(player: &mut Player) {
                 break;
             }
             "p" => {
-                place_new_pawn(player);
+                if player.pawns.iter().any(|&pawn| pawn == 0) {
+                    place_new_pawn(player);
+                } else {
+                    println!("Player has no empty space for a new pawn. Moving an existing pawn instead.");
+                    move_existing_pawn(player, 6);
+                }
                 break;
             }
             _ => {
