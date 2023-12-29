@@ -161,48 +161,65 @@ fn turns(players: &mut Vec<Player>) {
 
     loop {
         let player = &mut players[current_player];
-        let roll_result = player.roll();
-        println!("{} rolled: {}", player.color, roll_result);
 
-        if roll_result == 6 && player.pawns[0] == 0 {
-            player.pawns[0] = 1;
-        } else if roll_result == 6 {
-            loop {
-                println!("Press 'm' to move an existing pawn or 'p' to place another pawn on the board");
-                let mut action = String::new();
-                io::stdin().read_line(&mut action).expect("Failed to read line");
-                action = action.trim().to_lowercase();
-
-                match action.as_str() {
-                    "m" => {
-                        move_existing_pawn(player, roll_result);
-                        break;
-                    }
-                    "p" => {
-                        place_new_pawn(player);
-                        break;
-                    }
-                    _ => {
-                        println!("Invalid option. Please enter 'm' or 'p'.");
-                    }
-                }
-            }
-        } else {
-            let empty_count = player.pawns.iter().filter(|&&pawn| pawn == 0).count();
-            if empty_count == 4 {
-                current_player = (current_player + 1) % players.len();
-                continue;
-            } else if empty_count == 3 {
-                if let Some(non_empty_index) = player.pawns.iter().position(|&pawn| pawn != 0) {
-                    player.pawns[non_empty_index] += roll_result;
-                }
-            } else if empty_count < 3 {
-                move_existing_pawn(player, roll_result);
-            }
-        }
+        while handle_roll(player) {}
 
         println!("pawn positions on the board - {:?}", player.pawns);
         current_player = (current_player + 1) % players.len();
+    }
+}
+
+fn handle_roll(player: &mut Player) -> bool {
+    let roll_result = player.roll();
+    println!("{} rolled: {}", player.color, roll_result);
+
+    if roll_result == 6 {
+        if player.pawns[0] == 0 {
+            player.pawns[0] = 1;
+        } else {
+            handle_six_roll(player);
+        }
+        println!("{} got an extra roll!", player.color);
+        true
+    } else {
+        let empty_count = player.pawns.iter().filter(|&&pawn| pawn == 0).count();
+        if empty_count == 4 {
+            false
+        } else if empty_count == 3 {
+            if let Some(non_empty_index) = player.pawns.iter().position(|&pawn| pawn != 0) {
+                player.pawns[non_empty_index] += roll_result;
+            }
+            false
+        } else if empty_count < 3 {
+            move_existing_pawn(player, roll_result);
+            false
+        } else {
+            false
+        }
+    }
+}
+
+fn handle_six_roll(player: &mut Player) {
+    
+    loop {
+        println!("Press 'm' to move an existing pawn or 'p' to place another pawn on the board");
+        let mut action = String::new();
+        io::stdin().read_line(&mut action).expect("Failed to read line");
+        action = action.trim().to_lowercase();
+
+        match action.as_str() {
+            "m" => {
+                move_existing_pawn(player, 6);
+                break;
+            }
+            "p" => {
+                place_new_pawn(player);
+                break;
+            }
+            _ => {
+                println!("Invalid option. Please enter 'm' or 'p'.");
+            }
+        }
     }
 }
 
