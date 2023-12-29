@@ -160,18 +160,20 @@ fn place_new_pawn(player: &mut Player) {
 
 fn turns(players: &mut Vec<Player>) {
     let mut current_player = 0;
+    let mut turn_count = 2;
 
     loop {
         let player = &mut players[current_player];
 
-        while handle_roll(player) {}
+        while handle_roll(player, turn_count) {}
 
-        println!("pawn positions on the board - {:?}", player.pawns);
+        println!("Turn {}: pawn positions on the board - {:?}", turn_count, player.pawns);
         current_player = (current_player + 1) % players.len();
+        turn_count += 1;
     }
 }
 
-fn handle_roll(player: &mut Player) -> bool {
+fn handle_roll(player: &mut Player, turn_count: usize) -> bool {
     let roll_result = player.roll();
     println!("{} rolled: {}", player.color, roll_result);
 
@@ -179,7 +181,7 @@ fn handle_roll(player: &mut Player) -> bool {
         if player.pawns[0] == 0 {
             player.pawns[0] = 1;
         } else {
-            handle_six_roll(player);
+            handle_six_roll(player, turn_count);
         }
         println!("{} got an extra roll!", player.color);
         true
@@ -201,9 +203,9 @@ fn handle_roll(player: &mut Player) -> bool {
     }
 }
 
-fn handle_six_roll(player: &mut Player) {
+fn handle_six_roll(player: &mut Player, turn_count: usize) {
     loop {
-        println!("Press 'm' to move an existing pawn or 'p' to place another pawn on the board");
+        println!("Turn {}: Press 'm' to move an existing pawn or 'p' to place another pawn on the board", turn_count);
         let mut action = String::new();
         io::stdin().read_line(&mut action).expect("Failed to read line");
         action = action.trim().to_lowercase();
@@ -247,4 +249,3 @@ fn run_game() {
 fn main() {
     run_game();
 }
-
