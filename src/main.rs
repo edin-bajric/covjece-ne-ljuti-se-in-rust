@@ -60,7 +60,7 @@ fn choose_player_colors(number_of_players: u32) -> Vec<Player> {
 
     for player in 1..=number_of_players {
         println!(
-            "Player {}: Choose your color ({color_red}red, {color_blue}blue, {color_green}green, {color_reset}or {color_yellow}yellow{color_reset}):",
+            "player {}: Choose your color ({color_red}red, {color_blue}blue, {color_green}green, {color_reset}or {color_yellow}yellow{color_reset}):",
             player
         );
 
@@ -103,7 +103,7 @@ fn main() {
 
     println!("Players and their chosen colors:");
     for (i, player) in players.iter_mut().enumerate() {
-        println!("Player {}: {} - {:?}", i + 1, player.color, player.pawns);
+        println!("player {}: {} - {:?}", i + 1, player.color, player.pawns);
     }
 }
 
