@@ -158,6 +158,11 @@ fn place_new_pawn(player: &mut Player) {
     }
 }
 
+fn is_winning_condition(pawns: &[u32; 4]) -> bool {
+    let required_numbers = [41, 42, 43, 44];
+    required_numbers.iter().all(|&num| pawns.contains(&num))
+}
+
 fn turns(players: &mut Vec<Player>) {
     let mut current_player = 0;
     let mut turn_count = 2;
@@ -166,6 +171,11 @@ fn turns(players: &mut Vec<Player>) {
         let player = &mut players[current_player];
 
         while handle_roll(player, turn_count) {}
+
+        if is_winning_condition(&player.pawns) {
+            println!("Player {} wins!", player.color);
+            break;
+        }
 
         println!("Turn {}: pawn positions on the board - {:?}", turn_count, player.pawns);
         current_player = (current_player + 1) % players.len();
