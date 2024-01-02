@@ -2,6 +2,7 @@ use rand::Rng;
 use std::io;
 use inline_colorization::*;
 use serde::{Serialize, Deserialize};
+use std::fs;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 struct Player {
@@ -21,7 +22,7 @@ impl Player {
         let mut input = String::new();
         io::stdin().read_line(&mut input).expect("Failed to read line");
         let mut rng = rand::thread_rng();
-        rng.gen_range(1..=6)
+        rng.gen_range(1..=1)
     }
 }
 
@@ -134,10 +135,26 @@ fn move_existing_pawn(player: &mut Player, roll_result: u32) {
         };
 
         if pawn_number >= 1 && pawn_number <= 4 && player.pawns[pawn_number - 1] != 0 {
-            let target_position = player.pawns[pawn_number - 1] + roll_result;
+            let current_position = player.pawns[pawn_number - 1];
+            let target_position = current_position + roll_result;
+
+            if target_position > 44 {
+                println!("Moving this pawn will exceed the limit of 44. Do you want to place a new pawn? (y/n): ");
+                let mut choice = String::new();
+                io::stdin().read_line(&mut choice).expect("Failed to read line");
+                choice = choice.trim().to_lowercase();
+
+                if choice == "y" {
+                    place_new_pawn(player);
+                    break;
+                } else {
+                    println!("Choose another pawn or enter 'y' to place a new pawn.");
+                    continue;
+                }
+            }
 
             if !is_position_occupied(&player.pawns, target_position) {
-                player.pawns[pawn_number - 1] += roll_result;
+                player.pawns[pawn_number - 1] = target_position;
                 break;
             } else {
                 println!("Another pawn occupies the target position. Choose another pawn.");
@@ -179,7 +196,7 @@ fn turns(game_state: &mut GameState) {
         while handle_roll(player, game_state.turn_count) {}
 
         if is_winning_condition(&player.pawns) {
-            println!("Player {} wins!", player.color);
+            display_win_screen(&player.color);
             break;
         }
 
@@ -193,6 +210,29 @@ fn turns(game_state: &mut GameState) {
         game_state.turn_count += 1;
     }
 }
+
+fn display_win_screen(winning_color: &str) {
+    let win_text = r#"                                                                                                                             
+WWWWWWWW                           WWWWWWWW iiii                                                                              !!! 
+W::::::W                           W::::::Wi::::i                                                                            !!:!!
+W::::::W                           W::::::W iiii                                                                             !:::!
+W::::::W                           W::::::W                                                                                  !:::!
+ W:::::W           WWWWW           W:::::Wiiiiiiinnnn  nnnnnnnn    nnnn  nnnnnnnn        eeeeeeeeeeee    rrrrr   rrrrrrrrr   !:::!
+  W:::::W         W:::::W         W:::::W i:::::in:::nn::::::::nn  n:::nn::::::::nn    ee::::::::::::ee  r::::rrr:::::::::r  !:::!
+   W:::::W       W:::::::W       W:::::W   i::::in::::::::::::::nn n::::::::::::::nn  e::::::eeeee:::::eer:::::::::::::::::r !:::!
+    W:::::W     W:::::::::W     W:::::W    i::::inn:::::::::::::::nnn:::::::::::::::ne::::::e     e:::::err::::::rrrrr::::::r!:::!
+     W:::::W   W:::::W:::::W   W:::::W     i::::i  n:::::nnnn:::::n  n:::::nnnn:::::ne:::::::eeeee::::::e r:::::r     r:::::r!:::!
+      W:::::W W:::::W W:::::W W:::::W      i::::i  n::::n    n::::n  n::::n    n::::ne:::::::::::::::::e  r:::::r     rrrrrrr!:::!
+       W:::::W:::::W   W:::::W:::::W       i::::i  n::::n    n::::n  n::::n    n::::ne::::::eeeeeeeeeee   r:::::r            !!:!!
+        W:::::::::W     W:::::::::W        i::::i  n::::n    n::::n  n::::n    n::::ne:::::::e            r:::::r             !!! 
+         W:::::::W       W:::::::W        i::::::i n::::n    n::::n  n::::n    n::::ne::::::::e           r:::::r                 
+          W:::::W         W:::::W         i::::::i n::::n    n::::n  n::::n    n::::n e::::::::eeeeeeee   r:::::r             !!! 
+           W:::W           W:::W          i::::::i n::::n    n::::n  n::::n    n::::n  ee:::::::::::::e   r:::::r            !!:!!
+            WWW             WWW           iiiiiiii nnnnnn    nnnnnn  nnnnnn    nnnnnn    eeeeeeeeeeeeee   rrrrrrr             !!! 
+    "#;
+    println!("Congratulations, Player {}! You are the winner!\n {}", winning_color, win_text)
+}
+
 
 fn handle_roll(player: &mut Player, turn_count: usize) -> bool {
     let roll_result = player.roll();
@@ -212,7 +252,12 @@ fn handle_roll(player: &mut Player, turn_count: usize) -> bool {
             false
         } else if empty_count == 3 {
             if let Some(non_empty_index) = player.pawns.iter().position(|&pawn| pawn != 0) {
-                player.pawns[non_empty_index] += roll_result;
+                let target_position = player.pawns[non_empty_index] + roll_result;
+                if target_position <= 44 {
+                    player.pawns[non_empty_index] += roll_result;
+                } else {
+                    println!("Invalid move. Target position cannot exceed 44. Turn skipped.");
+                }
             }
             false
         } else if empty_count < 3 {
@@ -307,13 +352,21 @@ fn game_loop(mut game_state: GameState, is_new_game: bool) {
 
         turns(&mut game_state);
 
-        if save_game(&game_state).is_err() {
-            println!("Error saving game.");
+        if game_state.players.iter().any(|player| is_winning_condition(&player.pawns)) {
+            if let Err(err) = fs::remove_file("saved_game.json") {
+                eprintln!("Error deleting saved game file: {}", err);
+            }
+            println!("Save game deleted. Player wins!");
+
+           std::thread::sleep(std::time::Duration::from_secs(3));
+
+            clearscreen::clear().expect("failed to clear screen");
+            print_logo();
+            break;
         }
 
-        if game_state.players.iter().any(|player| is_winning_condition(&player.pawns)) {
-            println!("A player has won!");
-            break;
+        if save_game(&game_state).is_err() {
+            println!("Error saving game.");
         }
 
         _turn_count += 1;
