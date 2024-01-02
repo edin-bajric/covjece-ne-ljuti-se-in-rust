@@ -1,7 +1,9 @@
 use rand::Rng;
 use std::io;
 use inline_colorization::*;
+use serde::{Serialize, Deserialize};
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
 struct Player {
     color: String,
     pawns: [u32; 4],
@@ -163,23 +165,32 @@ fn is_winning_condition(pawns: &[u32; 4]) -> bool {
     required_numbers.iter().all(|&num| pawns.contains(&num))
 }
 
-fn turns(players: &mut Vec<Player>) {
+fn turns(game_state: &mut GameState) {
     let mut current_player = 0;
-    let mut turn_count = 2;
 
     loop {
-        let player = &mut players[current_player];
+        let cloned_game_state = game_state.clone();
+        let player = &mut game_state.players[current_player];
 
-        while handle_roll(player, turn_count) {}
+        if save_game(&cloned_game_state).is_err() {
+            println!("Error saving game.");
+        }
+
+        while handle_roll(player, game_state.turn_count) {}
 
         if is_winning_condition(&player.pawns) {
             println!("Player {} wins!", player.color);
             break;
         }
 
-        println!("Turn {}: pawn positions on the board - {:?}", turn_count, player.pawns);
-        current_player = (current_player + 1) % players.len();
-        turn_count += 1;
+        println!(
+            "Turn {}: pawn positions on the board - {:?}",
+            game_state.turn_count,
+            player.pawns
+        );
+
+        current_player = (current_player + 1) % game_state.players.len();
+        game_state.turn_count += 1;
     }
 }
 
@@ -241,21 +252,111 @@ fn handle_six_roll(player: &mut Player, turn_count: usize) {
     }
 }
 
-fn run_game() {
+fn get_user_input(prompt: &str) -> u32 {
+    loop {
+        let mut input = String::new();
+        println!("{}", prompt);
+        io::stdin().read_line(&mut input).expect("Failed to read line");
+
+        match input.trim().parse() {
+            Ok(number) => return number,
+            Err(_) => println!("Invalid input. Please enter a valid number."),
+        }
+    }
+}
+
+fn save_game(game_state: &GameState) -> Result<(), Box<dyn std::error::Error>> {
+    let serialized = serde_json::to_string(game_state)?;
+    std::fs::write("saved_game.json", serialized)?;
+    println!("Game saved successfully.");
+    Ok(())
+}
+
+fn load_game() -> Result<GameState, Box<dyn std::error::Error>> {
+    let serialized = std::fs::read_to_string("saved_game.json")?;
+    let game_state = serde_json::from_str(&serialized)?;
+    Ok(game_state)
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+struct GameState {
+    players: Vec<Player>,
+    turn_count: usize,
+}
+
+fn game_loop(mut game_state: GameState, is_new_game: bool) {
+    let mut _turn_count = if is_new_game { 2 } else { game_state.turn_count };
+
+    loop {
+        clearscreen::clear().expect("failed to clear screen");
+        print_logo();
+
+        println!("Players and their chosen colors:");
+        for (i, player) in game_state.players.iter_mut().enumerate() {
+            println!(
+                "Player {}: {} | pawn positions on the board - {:?}",
+                i + 1,
+                player.color,
+                player.pawns
+            );
+        }
+
+        if is_new_game {
+            initial_rolls(&mut game_state.players);
+        }
+
+        turns(&mut game_state);
+
+        if save_game(&game_state).is_err() {
+            println!("Error saving game.");
+        }
+
+        if game_state.players.iter().any(|player| is_winning_condition(&player.pawns)) {
+            println!("A player has won!");
+            break;
+        }
+
+        _turn_count += 1;
+    }
+}
+
+fn start_new_game() {
     clearscreen::clear().expect("failed to clear screen");
     print_logo();
-    let number_of_players = choose_number_of_players();
-    let mut players = choose_player_colors(number_of_players);
+    let num_players = choose_number_of_players();
+    let players = choose_player_colors(num_players);
+    let game_state = GameState {
+        players,
+        turn_count: 2,
+    };
+    game_loop(game_state, true);
+}
 
-    println!("Players and their chosen colors:");
-    for (i, player) in players.iter_mut().enumerate() {
-        println!("Player {}: {} | pawn positions on the board - {:?}", i + 1, player.color, player.pawns);
+fn load_saved_game() {
+    match load_game() {
+        Ok(loaded_game_state) => {
+            println!("Loaded players: {:?}", loaded_game_state.players);
+            game_loop(loaded_game_state, false);
+        }
+        Err(err) => println!("Error loading game: {}", err),
     }
-
-    initial_rolls(&mut players);
-    turns(&mut players);
 }
 
 fn main() {
-    run_game();
+    clearscreen::clear().expect("failed to clear screen");
+    print_logo();
+    loop {
+        println!("1. Start a new game");
+        println!("2. Load a saved game");
+        println!("3. Quit");
+
+        let choice: u32 = get_user_input("Enter your choice: ");
+
+        match choice {
+            1 => start_new_game(),
+            2 => load_saved_game(),
+            3 => return,
+            _ => println!("Invalid choice. Please enter a number between 1 and 3."),
+        }
+    }
 }
