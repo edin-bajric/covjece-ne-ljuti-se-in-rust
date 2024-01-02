@@ -196,7 +196,7 @@ fn turns(game_state: &mut GameState) {
         while handle_roll(player, game_state.turn_count) {}
 
         if is_winning_condition(&player.pawns) {
-            display_win_screen(&player.color);
+            display_victory_screen(&player.color);
             break;
         }
 
@@ -211,8 +211,8 @@ fn turns(game_state: &mut GameState) {
     }
 }
 
-fn display_win_screen(winning_color: &str) {
-    let win_text = r#"                                                                                                                                             
+fn display_victory_screen(winning_color: &str) {
+    let victory_text = r#"                                                                                                                                             
 VVVVVVVV           VVVVVVVV iiii                               tttt                                                                      !!!      
 V::::::V           V::::::Vi::::i                           ttt:::t                                                                     !!:!!     
 V::::::V           V::::::V iiii                            t:::::t                                                                     !:::!     
@@ -235,7 +235,7 @@ V::::::V           V::::::V                                 t:::::t             
                                                                                                                   y:::::y                         
                                                                                                                  yyyyyyy 
     "#;
-    println!("Congratulations, Player {}! You are the winner!\n {}", winning_color, win_text)
+    println!("Congratulations, Player {}! You are the winner!\n {}", winning_color, victory_text)
 }
 
 
