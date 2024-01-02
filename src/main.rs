@@ -212,23 +212,28 @@ fn turns(game_state: &mut GameState) {
 }
 
 fn display_win_screen(winning_color: &str) {
-    let win_text = r#"                                                                                                                             
-WWWWWWWW                           WWWWWWWW iiii                                                                              !!! 
-W::::::W                           W::::::Wi::::i                                                                            !!:!!
-W::::::W                           W::::::W iiii                                                                             !:::!
-W::::::W                           W::::::W                                                                                  !:::!
- W:::::W           WWWWW           W:::::Wiiiiiiinnnn  nnnnnnnn    nnnn  nnnnnnnn        eeeeeeeeeeee    rrrrr   rrrrrrrrr   !:::!
-  W:::::W         W:::::W         W:::::W i:::::in:::nn::::::::nn  n:::nn::::::::nn    ee::::::::::::ee  r::::rrr:::::::::r  !:::!
-   W:::::W       W:::::::W       W:::::W   i::::in::::::::::::::nn n::::::::::::::nn  e::::::eeeee:::::eer:::::::::::::::::r !:::!
-    W:::::W     W:::::::::W     W:::::W    i::::inn:::::::::::::::nnn:::::::::::::::ne::::::e     e:::::err::::::rrrrr::::::r!:::!
-     W:::::W   W:::::W:::::W   W:::::W     i::::i  n:::::nnnn:::::n  n:::::nnnn:::::ne:::::::eeeee::::::e r:::::r     r:::::r!:::!
-      W:::::W W:::::W W:::::W W:::::W      i::::i  n::::n    n::::n  n::::n    n::::ne:::::::::::::::::e  r:::::r     rrrrrrr!:::!
-       W:::::W:::::W   W:::::W:::::W       i::::i  n::::n    n::::n  n::::n    n::::ne::::::eeeeeeeeeee   r:::::r            !!:!!
-        W:::::::::W     W:::::::::W        i::::i  n::::n    n::::n  n::::n    n::::ne:::::::e            r:::::r             !!! 
-         W:::::::W       W:::::::W        i::::::i n::::n    n::::n  n::::n    n::::ne::::::::e           r:::::r                 
-          W:::::W         W:::::W         i::::::i n::::n    n::::n  n::::n    n::::n e::::::::eeeeeeee   r:::::r             !!! 
-           W:::W           W:::W          i::::::i n::::n    n::::n  n::::n    n::::n  ee:::::::::::::e   r:::::r            !!:!!
-            WWW             WWW           iiiiiiii nnnnnn    nnnnnn  nnnnnn    nnnnnn    eeeeeeeeeeeeee   rrrrrrr             !!! 
+    let win_text = r#"                                                                                                                                             
+VVVVVVVV           VVVVVVVV iiii                               tttt                                                                      !!!      
+V::::::V           V::::::Vi::::i                           ttt:::t                                                                     !!:!!     
+V::::::V           V::::::V iiii                            t:::::t                                                                     !:::!     
+V::::::V           V::::::V                                 t:::::t                                                                     !:::!     
+ V:::::V           V:::::Viiiiiii     ccccccccccccccccttttttt:::::ttttttt       ooooooooooo   rrrrr   rrrrrrrrryyyyyyy           yyyyyyy!:::!     
+  V:::::V         V:::::V i:::::i   cc:::::::::::::::ct:::::::::::::::::t     oo:::::::::::oo r::::rrr:::::::::ry:::::y         y:::::y !:::!     
+   V:::::V       V:::::V   i::::i  c:::::::::::::::::ct:::::::::::::::::t    o:::::::::::::::or:::::::::::::::::ry:::::y       y:::::y  !:::!     
+    V:::::V     V:::::V    i::::i c:::::::cccccc:::::ctttttt:::::::tttttt    o:::::ooooo:::::orr::::::rrrrr::::::ry:::::y     y:::::y   !:::!     
+     V:::::V   V:::::V     i::::i c::::::c     ccccccc      t:::::t          o::::o     o::::o r:::::r     r:::::r y:::::y   y:::::y    !:::!     
+      V:::::V V:::::V      i::::i c:::::c                   t:::::t          o::::o     o::::o r:::::r     rrrrrrr  y:::::y y:::::y     !:::!     
+       V:::::V:::::V       i::::i c:::::c                   t:::::t          o::::o     o::::o r:::::r               y:::::y:::::y      !!:!!     
+        V:::::::::V        i::::i c::::::c     ccccccc      t:::::t    tttttto::::o     o::::o r:::::r                y:::::::::y        !!!      
+         V:::::::V        i::::::ic:::::::cccccc:::::c      t::::::tttt:::::to:::::ooooo:::::o r:::::r                 y:::::::y                  
+          V:::::V         i::::::i c:::::::::::::::::c      tt::::::::::::::to:::::::::::::::o r:::::r                  y:::::y          !!!      
+           V:::V          i::::::i  cc:::::::::::::::c        tt:::::::::::tt oo:::::::::::oo  r:::::r                 y:::::y          !!:!!     
+            VVV           iiiiiiii    cccccccccccccccc          ttttttttttt     ooooooooooo    rrrrrrr                y:::::y            !!!      
+                                                                                                                     y:::::y                      
+                                                                                                                    y:::::y                       
+                                                                                                                   y:::::y                        
+                                                                                                                  y:::::y                         
+                                                                                                                 yyyyyyy 
     "#;
     println!("Congratulations, Player {}! You are the winner!\n {}", winning_color, win_text)
 }
@@ -358,7 +363,7 @@ fn game_loop(mut game_state: GameState, is_new_game: bool) {
             }
             println!("Save game deleted. Player wins!");
 
-           std::thread::sleep(std::time::Duration::from_secs(3));
+           std::thread::sleep(std::time::Duration::from_secs(5));
 
             clearscreen::clear().expect("failed to clear screen");
             print_logo();
