@@ -10,6 +10,12 @@ struct Player {
     pawns: [u32; 4],
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+struct GameState {
+    players: Vec<Player>,
+    turn_count: usize,
+}
+
 impl Player {
     fn new(color: String) -> Self {
         Player {
@@ -326,12 +332,6 @@ fn load_game() -> Result<GameState, Box<dyn std::error::Error>> {
     let serialized = std::fs::read_to_string("saved_game.json")?;
     let game_state = serde_json::from_str(&serialized)?;
     Ok(game_state)
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-struct GameState {
-    players: Vec<Player>,
-    turn_count: usize,
 }
 
 fn game_loop(mut game_state: GameState, is_new_game: bool) {
