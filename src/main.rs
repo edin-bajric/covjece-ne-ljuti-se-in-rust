@@ -28,7 +28,7 @@ impl Player {
         let mut input = String::new();
         io::stdin().read_line(&mut input).expect("Failed to read line");
         let mut rng = rand::thread_rng();
-        rng.gen_range(1..=1)
+        rng.gen_range(2..=2)
     }
 }
 
@@ -44,6 +44,33 @@ fn print_logo() {
     "#;
 
     println!("{color_cyan}{}{color_reset}", logo);
+}
+
+fn display_victory_screen(winning_color: &str) {
+    let victory_text = r#"                                                                                                                                             
+VVVVVVVV           VVVVVVVV iiii                               tttt                                                                      !!!      
+V::::::V           V::::::Vi::::i                           ttt:::t                                                                     !!:!!     
+V::::::V           V::::::V iiii                            t:::::t                                                                     !:::!     
+V::::::V           V::::::V                                 t:::::t                                                                     !:::!     
+ V:::::V           V:::::Viiiiiii     ccccccccccccccccttttttt:::::ttttttt       ooooooooooo   rrrrr   rrrrrrrrryyyyyyy           yyyyyyy!:::!     
+  V:::::V         V:::::V i:::::i   cc:::::::::::::::ct:::::::::::::::::t     oo:::::::::::oo r::::rrr:::::::::ry:::::y         y:::::y !:::!     
+   V:::::V       V:::::V   i::::i  c:::::::::::::::::ct:::::::::::::::::t    o:::::::::::::::or:::::::::::::::::ry:::::y       y:::::y  !:::!     
+    V:::::V     V:::::V    i::::i c:::::::cccccc:::::ctttttt:::::::tttttt    o:::::ooooo:::::orr::::::rrrrr::::::ry:::::y     y:::::y   !:::!     
+     V:::::V   V:::::V     i::::i c::::::c     ccccccc      t:::::t          o::::o     o::::o r:::::r     r:::::r y:::::y   y:::::y    !:::!     
+      V:::::V V:::::V      i::::i c:::::c                   t:::::t          o::::o     o::::o r:::::r     rrrrrrr  y:::::y y:::::y     !:::!     
+       V:::::V:::::V       i::::i c:::::c                   t:::::t          o::::o     o::::o r:::::r               y:::::y:::::y      !!:!!     
+        V:::::::::V        i::::i c::::::c     ccccccc      t:::::t    tttttto::::o     o::::o r:::::r                y:::::::::y        !!!      
+         V:::::::V        i::::::ic:::::::cccccc:::::c      t::::::tttt:::::to:::::ooooo:::::o r:::::r                 y:::::::y                  
+          V:::::V         i::::::i c:::::::::::::::::c      tt::::::::::::::to:::::::::::::::o r:::::r                  y:::::y          !!!      
+           V:::V          i::::::i  cc:::::::::::::::c        tt:::::::::::tt oo:::::::::::oo  r:::::r                 y:::::y          !!:!!     
+            VVV           iiiiiiii    cccccccccccccccc          ttttttttttt     ooooooooooo    rrrrrrr                y:::::y            !!!      
+                                                                                                                     y:::::y                      
+                                                                                                                    y:::::y                       
+                                                                                                                   y:::::y                        
+                                                                                                                  y:::::y                         
+                                                                                                                 yyyyyyy 
+    "#;
+    println!("Congratulations, Player {}! You are the winner!\n {}", winning_color, victory_text)
 }
 
 fn choose_number_of_players() -> u32 {
@@ -140,33 +167,38 @@ fn move_existing_pawn(player: &mut Player, roll_result: u32) {
         };
 
         if pawn_number >= 1 && pawn_number <= 4 && player.pawns[pawn_number - 1] != 0 {
-            let current_position = player.pawns[pawn_number - 1];
-            let target_position = current_position + roll_result;
+            let target_position = player.pawns[pawn_number - 1] + roll_result;
 
-            if target_position > 44 {
-                println!("Moving this pawn will exceed the limit of 44. Do you want to place a new pawn? (y/n): ");
-                let mut choice = String::new();
-                io::stdin().read_line(&mut choice).expect("Failed to read line");
-                choice = choice.trim().to_lowercase();
-
-                if choice == "y" {
-                    place_new_pawn(player);
-                    break;
-                } else {
-                    println!("Choose another pawn or enter 'y' to place a new pawn.");
-                    continue;
-                }
-            }
-
-            if !is_position_occupied(&player.pawns, target_position) {
-                player.pawns[pawn_number - 1] = target_position;
+            if target_position <= 44 && !is_position_occupied(&player.pawns, target_position) && !is_jumping_over_safehouse(&player.pawns, pawn_number, target_position) {
+                player.pawns[pawn_number - 1] += roll_result;
                 break;
             } else {
-                println!("Another pawn occupies the target position. Choose another pawn.");
+                if target_position > 44 {
+                    println!("Invalid move: The pawn cannot go beyond the board limit. Choose another pawn.");
+                } else if is_position_occupied(&player.pawns, target_position) {
+                    println!("Another pawn occupies the target position. Choose another pawn.");
+                } else {
+                    println!("Invalid move: Pawns are not allowed to jump over each other within safehouses. Choose another pawn.");
+                }
             }
         } else {
             println!("Invalid pawn number or pawn not at the target position. Try again.");
         }
+    }
+}
+
+fn is_jumping_over_safehouse(pawns: &[u32; 4], _pawn_number: usize, target_position: u32) -> bool {
+    let safehouse_start = 41;
+    let safehouse_end = 44;
+
+    if target_position > safehouse_start && target_position <= safehouse_end {
+        let pawn_positions_in_safehouse: Vec<_> = pawns
+            .iter()
+            .filter(|&&position| position > safehouse_start && position <= safehouse_end && position != target_position)
+            .collect();
+        pawn_positions_in_safehouse.len() > 0
+    } else {
+        false
     }
 }
 
@@ -216,33 +248,6 @@ fn turns(game_state: &mut GameState) {
     }
 }
 
-fn display_victory_screen(winning_color: &str) {
-    let victory_text = r#"                                                                                                                                             
-VVVVVVVV           VVVVVVVV iiii                               tttt                                                                      !!!      
-V::::::V           V::::::Vi::::i                           ttt:::t                                                                     !!:!!     
-V::::::V           V::::::V iiii                            t:::::t                                                                     !:::!     
-V::::::V           V::::::V                                 t:::::t                                                                     !:::!     
- V:::::V           V:::::Viiiiiii     ccccccccccccccccttttttt:::::ttttttt       ooooooooooo   rrrrr   rrrrrrrrryyyyyyy           yyyyyyy!:::!     
-  V:::::V         V:::::V i:::::i   cc:::::::::::::::ct:::::::::::::::::t     oo:::::::::::oo r::::rrr:::::::::ry:::::y         y:::::y !:::!     
-   V:::::V       V:::::V   i::::i  c:::::::::::::::::ct:::::::::::::::::t    o:::::::::::::::or:::::::::::::::::ry:::::y       y:::::y  !:::!     
-    V:::::V     V:::::V    i::::i c:::::::cccccc:::::ctttttt:::::::tttttt    o:::::ooooo:::::orr::::::rrrrr::::::ry:::::y     y:::::y   !:::!     
-     V:::::V   V:::::V     i::::i c::::::c     ccccccc      t:::::t          o::::o     o::::o r:::::r     r:::::r y:::::y   y:::::y    !:::!     
-      V:::::V V:::::V      i::::i c:::::c                   t:::::t          o::::o     o::::o r:::::r     rrrrrrr  y:::::y y:::::y     !:::!     
-       V:::::V:::::V       i::::i c:::::c                   t:::::t          o::::o     o::::o r:::::r               y:::::y:::::y      !!:!!     
-        V:::::::::V        i::::i c::::::c     ccccccc      t:::::t    tttttto::::o     o::::o r:::::r                y:::::::::y        !!!      
-         V:::::::V        i::::::ic:::::::cccccc:::::c      t::::::tttt:::::to:::::ooooo:::::o r:::::r                 y:::::::y                  
-          V:::::V         i::::::i c:::::::::::::::::c      tt::::::::::::::to:::::::::::::::o r:::::r                  y:::::y          !!!      
-           V:::V          i::::::i  cc:::::::::::::::c        tt:::::::::::tt oo:::::::::::oo  r:::::r                 y:::::y          !!:!!     
-            VVV           iiiiiiii    cccccccccccccccc          ttttttttttt     ooooooooooo    rrrrrrr                y:::::y            !!!      
-                                                                                                                     y:::::y                      
-                                                                                                                    y:::::y                       
-                                                                                                                   y:::::y                        
-                                                                                                                  y:::::y                         
-                                                                                                                 yyyyyyy 
-    "#;
-    println!("Congratulations, Player {}! You are the winner!\n {}", winning_color, victory_text)
-}
-
 fn handle_roll(player: &mut Player, turn_count: usize) -> bool {
     let roll_result = player.roll();
     println!("{} rolled: {}", player.color, roll_result);
@@ -262,19 +267,43 @@ fn handle_roll(player: &mut Player, turn_count: usize) -> bool {
         } else if empty_count == 3 {
             if let Some(non_empty_index) = player.pawns.iter().position(|&pawn| pawn != 0) {
                 let target_position = player.pawns[non_empty_index] + roll_result;
-                if target_position <= 44 {
+                if target_position <= 44 && !is_jumping_over_safehouse(&player.pawns, non_empty_index, target_position) {
                     player.pawns[non_empty_index] += roll_result;
                 } else {
-                    println!("Invalid move. Target position cannot exceed 44. Turn skipped.");
+                    handle_invalid_move(target_position);
                 }
             }
             false
         } else if empty_count < 3 {
-            move_existing_pawn(player, roll_result);
+            if has_legal_moves(player, roll_result) {
+                move_existing_pawn(player, roll_result);
+            } else {
+                println!("No legal moves available. Turn skipped.");
+            }
             false
         } else {
             false
         }
+    }
+}
+
+fn has_legal_moves(player: &Player, roll_result: u32) -> bool {
+    for (pawn_number, &position) in player.pawns.iter().enumerate() {
+        if position != 0 {
+            let target_position = position + roll_result;
+            if target_position <= 44 && !is_jumping_over_safehouse(&player.pawns, pawn_number, target_position) && !is_position_occupied(&player.pawns, target_position) {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+fn handle_invalid_move(target_position: u32) {
+    if target_position > 44 {
+        println!("Invalid move: The pawn cannot go beyond the board limit. Choose another pawn.");
+    } else {
+        println!("Invalid move: Pawns are not allowed to jump over each other within the safehouse. Turn skipped.");
     }
 }
 
