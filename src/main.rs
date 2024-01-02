@@ -105,7 +105,6 @@ fn choose_player_colors(number_of_players: u32) -> Vec<Player> {
     players
 }
 
-
 fn initial_rolls(players: &mut Vec<Player>) {
     for player in players.iter_mut() {
         let mut counter = 0;
@@ -244,7 +243,6 @@ V::::::V           V::::::V                                 t:::::t             
     println!("Congratulations, Player {}! You are the winner!\n {}", winning_color, victory_text)
 }
 
-
 fn handle_roll(player: &mut Player, turn_count: usize) -> bool {
     let roll_result = player.roll();
     println!("{} rolled: {}", player.color, roll_result);
@@ -363,7 +361,7 @@ fn game_loop(mut game_state: GameState, is_new_game: bool) {
             }
             println!("Save game deleted. Player wins!");
 
-           std::thread::sleep(std::time::Duration::from_secs(5));
+            std::thread::sleep(std::time::Duration::from_secs(5));
 
             clearscreen::clear().expect("failed to clear screen");
             print_logo();
