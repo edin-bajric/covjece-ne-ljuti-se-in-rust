@@ -28,7 +28,7 @@ impl Player {
         let mut input = String::new();
         io::stdin().read_line(&mut input).expect("Failed to read line");
         let mut rng = rand::thread_rng();
-        rng.gen_range(2..=2)
+        rng.gen_range(1..=6)
     }
 }
 
