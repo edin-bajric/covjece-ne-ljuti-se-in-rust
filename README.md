@@ -1,1 +1,1 @@
-# Implementacija Čovječe ne ljuti se društvene igre u Rust-u
+##Implementacija društvene igre "Čovječe ne ljuti se" u Rust-u
