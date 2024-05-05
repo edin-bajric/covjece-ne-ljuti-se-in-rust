@@ -1,3 +1,1 @@
-# Group 3
-# Programming Languages Project
-# Čovječe ne ljuti se
+# Implementacija Čovječe ne ljuti se društvene igre u Rust-u
